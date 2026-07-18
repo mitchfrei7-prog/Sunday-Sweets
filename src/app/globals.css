@@ -24,6 +24,15 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 16px minimum keeps iOS Safari from auto-zooming (or refusing focus) on tap */
+input,
+select,
+textarea,
+button {
+  font-size: 1rem;
+  font-family: inherit;
+}
+
 h1,
 h2,
 h3 {
