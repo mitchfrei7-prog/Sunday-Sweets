@@ -115,6 +115,12 @@ export default async function BakeWrapUpPage({
         <div className="mt-3">
           <CopyLinkButton url={shareUrl} />
         </div>
+        <Link
+          href={`/f/${bake.shareId}?by=emma`}
+          className="mt-2 block text-sm text-terracotta-dark underline"
+        >
+          Or enter feedback for someone yourself
+        </Link>
       </section>
 
       <section className="mt-4 pb-8">

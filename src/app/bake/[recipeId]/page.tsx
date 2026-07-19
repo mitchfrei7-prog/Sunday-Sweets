@@ -127,6 +127,23 @@ export default async function BakeRecapPage({
                   &ldquo;{version.why}&rdquo;
                 </p>
               )}
+              <details className="mt-2">
+                <summary className="cursor-pointer text-sm text-terracotta-dark">
+                  Ingredients &amp; steps
+                </summary>
+                <div className="mt-2 space-y-3 text-sm">
+                  <ul className="list-disc space-y-0.5 pl-5">
+                    {version.ingredients.map((ing, i) => (
+                      <li key={i}>{ing}</li>
+                    ))}
+                  </ul>
+                  <ol className="list-decimal space-y-1 pl-5">
+                    {version.steps.map((step, i) => (
+                      <li key={i}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+              </details>
               <div className="mt-3 flex gap-2">
                 <Link
                   href={`/bake/${recipe.id}/log?v=${version.id}`}

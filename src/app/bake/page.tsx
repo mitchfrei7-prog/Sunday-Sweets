@@ -54,22 +54,37 @@ async function RecipePicker() {
               ).toFixed(1)
             : null;
 
+        const latestVersion = [...recipe.versions].sort(
+          (a, b) => b.versionNumber - a.versionNumber,
+        )[0];
+
         return (
           <li key={recipe.id}>
-            <Link
-              href={`/bake/${recipe.id}`}
-              className="block rounded-xl border border-butter-dark bg-white/60 px-4 py-3 active:bg-butter/50"
-            >
-              <div className="flex items-baseline justify-between">
-                <span className="font-medium">{recipe.name}</span>
-                {avg && <span className="text-sm text-honey">★ {avg}</span>}
-              </div>
-              <p className="mt-0.5 text-sm text-latte">
-                {bakes.length === 0
-                  ? "Never baked — first time!"
-                  : `${bakes.length} bake${bakes.length === 1 ? "" : "s"} · last ${lastBaked}`}
-              </p>
-            </Link>
+            <div className="rounded-xl border border-butter-dark bg-white/60 px-4 py-3">
+              <Link href={`/bake/${recipe.id}`} className="block active:opacity-70">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-medium">{recipe.name}</span>
+                  {avg && <span className="text-sm text-honey">★ {avg}</span>}
+                </div>
+                <p className="mt-0.5 text-sm text-latte">
+                  {bakes.length === 0
+                    ? "Never baked — first time!"
+                    : `${bakes.length} bake${bakes.length === 1 ? "" : "s"} · last ${lastBaked}`}
+                </p>
+              </Link>
+              {latestVersion && latestVersion.ingredients.length > 0 && (
+                <details className="mt-2 border-t border-butter-dark/60 pt-2">
+                  <summary className="cursor-pointer text-sm text-terracotta-dark">
+                    Ingredients (v{latestVersion.versionNumber})
+                  </summary>
+                  <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm">
+                    {latestVersion.ingredients.map((ing, i) => (
+                      <li key={i}>{ing}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
           </li>
         );
       })}
