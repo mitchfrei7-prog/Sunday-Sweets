@@ -59,7 +59,10 @@ async function RecentBakes() {
               : null;
           return (
             <li key={bake.id}>
-              <div className="rounded-xl border border-butter-dark bg-white/60 px-4 py-3">
+              <Link
+                href={`/bakes/${bake.id}`}
+                className="block rounded-xl border border-butter-dark bg-white/60 px-4 py-3 active:bg-butter/50"
+              >
                 <div className="flex items-baseline justify-between">
                   <span className="font-medium">
                     {bake.version.recipe.name} · v{bake.version.versionNumber}
@@ -72,7 +75,7 @@ async function RecentBakes() {
                   {bake.bakedOn} · {bake.feedback.length} taster
                   {bake.feedback.length === 1 ? "" : "s"}
                 </p>
-              </div>
+              </Link>
             </li>
           );
         })}

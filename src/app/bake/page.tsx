@@ -1,20 +1,78 @@
 import Link from "next/link";
+import { desc } from "drizzle-orm";
+import { getDb, isDbConfigured, schema } from "@/db";
+import { SetupNotice } from "@/components/setup-notice";
 
-export default function BakePage() {
+export const dynamic = "force-dynamic";
+
+export default async function BakePickRecipePage() {
   return (
     <main className="px-4 pt-8">
       <h1 className="text-3xl">Bake tonight</h1>
-      <p className="mt-1 text-latte">
-        Pick a recipe, see its history, choose a version, and log the bake.
-      </p>
-      <div className="mt-6 rounded-2xl border border-butter-dark bg-butter/60 p-5 text-sm text-latte">
-        The bake flow is the next slice of Phase 1 — coming right after the
-        recipe box. For now,{" "}
-        <Link href="/recipes" className="text-terracotta-dark underline">
-          build up the recipe box
-        </Link>
-        .
-      </div>
+      <p className="mt-1 text-latte">Step 1 · Pick a recipe</p>
+      {isDbConfigured() ? <RecipePicker /> : <SetupNotice />}
     </main>
+  );
+}
+
+async function RecipePicker() {
+  const db = getDb();
+  const recipes = await db.query.recipes.findMany({
+    orderBy: [desc(schema.recipes.createdAt)],
+    with: {
+      versions: { with: { bakes: { with: { feedback: true } } } },
+    },
+  });
+
+  if (recipes.length === 0) {
+    return (
+      <div className="mt-6 rounded-2xl border border-butter-dark bg-butter/60 p-5 text-sm text-latte">
+        No recipes yet.{" "}
+        <Link href="/recipes/new" className="text-terracotta-dark underline">
+          Add your first recipe
+        </Link>{" "}
+        to start baking.
+      </div>
+    );
+  }
+
+  return (
+    <ul className="mt-5 space-y-2 pb-8">
+      {recipes.map((recipe) => {
+        const bakes = recipe.versions.flatMap((v) => v.bakes);
+        const lastBaked = bakes
+          .map((b) => b.bakedOn)
+          .sort()
+          .at(-1);
+        const allRatings = bakes.flatMap((b) =>
+          b.feedback.map((f) => Number(f.overall)),
+        );
+        const avg =
+          allRatings.length > 0
+            ? (
+                allRatings.reduce((a, b) => a + b, 0) / allRatings.length
+              ).toFixed(1)
+            : null;
+
+        return (
+          <li key={recipe.id}>
+            <Link
+              href={`/bake/${recipe.id}`}
+              className="block rounded-xl border border-butter-dark bg-white/60 px-4 py-3 active:bg-butter/50"
+            >
+              <div className="flex items-baseline justify-between">
+                <span className="font-medium">{recipe.name}</span>
+                {avg && <span className="text-sm text-honey">★ {avg}</span>}
+              </div>
+              <p className="mt-0.5 text-sm text-latte">
+                {bakes.length === 0
+                  ? "Never baked — first time!"
+                  : `${bakes.length} bake${bakes.length === 1 ? "" : "s"} · last ${lastBaked}`}
+              </p>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
