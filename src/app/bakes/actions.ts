@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { del, put } from "@vercel/blob";
 import { getDb, schema } from "@/db";
-import { isBlobConfigured } from "@/lib/blob";
+import { getBlobToken, isBlobConfigured } from "@/lib/blob";
 
 /** Parse a half-star rating; empty -> null, invalid -> throws. */
 function parseRating(raw: FormDataEntryValue | null): string | null {
@@ -91,6 +91,7 @@ export async function addBakePhotoAction(
     const blob = await put(key, file, {
       access: "public",
       contentType: "image/jpeg",
+      token: getBlobToken(),
     });
     const db = getDb();
     await db.insert(schema.bakePhotos).values({ bakeId, url: blob.url });
@@ -119,7 +120,7 @@ export async function deleteBakePhotoAction(formData: FormData) {
     // Best-effort blob removal — never block the DB delete on it.
     if (isBlobConfigured()) {
       try {
-        await del(photo.url);
+        await del(photo.url, { token: getBlobToken() });
       } catch {
         // ignore — the row still gets removed
       }

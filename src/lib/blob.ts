@@ -1,14 +1,21 @@
 /**
- * Whether Vercel Blob is wired up. Two auth models are supported:
- *  - Static token: BLOB_READ_WRITE_TOKEN (set when the store is created).
- *  - OIDC "connect to project" (Vercel's default): the SDK pairs BLOB_STORE_ID
- *    with the auto-rotated VERCEL_OIDC_TOKEN, so no static token exists.
- * Either one means uploads can authenticate. Server-only — no secret is exposed
- * to the client. On Vercel, VERCEL_OIDC_TOKEN is injected at deploy time; for
- * local dev with the OIDC model, run `vercel env pull` to fetch one.
+ * Vercel Blob's read-write token. Vercel names it <PREFIX>_READ_WRITE_TOKEN —
+ * default prefix BLOB, but this project's store uses PUB. The @vercel/blob SDK
+ * only auto-reads the default name, so we resolve the token ourselves (any
+ * prefix) and pass it to put()/del() explicitly. Server-only — never exposed to
+ * the client.
  */
-export function isBlobConfigured(): boolean {
-  return Boolean(
-    process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID,
+export function getBlobToken(): string | undefined {
+  return (
+    process.env.BLOB_READ_WRITE_TOKEN ??
+    process.env.PUB_READ_WRITE_TOKEN ??
+    Object.entries(process.env).find(([k]) =>
+      k.endsWith("_READ_WRITE_TOKEN"),
+    )?.[1]
   );
+}
+
+/** Whether Blob uploads can authenticate (a read-write token is available). */
+export function isBlobConfigured(): boolean {
+  return Boolean(getBlobToken());
 }
