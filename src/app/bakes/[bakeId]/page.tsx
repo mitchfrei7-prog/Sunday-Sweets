@@ -9,6 +9,9 @@ import { CopyLinkButton } from "@/components/copy-link-button";
 import { versionName } from "@/lib/version";
 import { formatBakeDate } from "@/lib/dates";
 import { WrapUpForm } from "./wrap-up-form";
+import { PhotoUploader } from "./photo-uploader";
+import { deleteBakePhotoAction } from "../actions";
+import { isBlobConfigured } from "@/lib/blob";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +36,7 @@ export default async function BakeWrapUpPage({
     with: {
       version: { with: { recipe: true } },
       flourBlend: true,
+      photos: { orderBy: [desc(schema.bakePhotos.createdAt)] },
       feedback: { orderBy: [desc(schema.feedback.createdAt)] },
     },
   });
@@ -86,6 +90,50 @@ export default async function BakeWrapUpPage({
             notes: bake.notes ?? "",
           }}
         />
+      </section>
+
+      <section className="mt-4 rounded-2xl border border-butter-dark bg-white/60 p-4">
+        <h2 className="text-lg">Photos</h2>
+        {bake.photos.length > 0 && (
+          <ul className="mt-3 grid grid-cols-2 gap-2">
+            {bake.photos.map((photo) => (
+              <li key={photo.id} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.url}
+                  alt="Bake photo"
+                  className="aspect-square w-full rounded-xl object-cover"
+                  loading="lazy"
+                />
+                <form action={deleteBakePhotoAction} className="absolute right-1.5 top-1.5">
+                  <input type="hidden" name="photoId" value={photo.id} />
+                  <input type="hidden" name="bakeId" value={bake.id} />
+                  <button
+                    type="submit"
+                    aria-label="Delete photo"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-chocolate/70 text-sm text-cream active:bg-chocolate"
+                  >
+                    ✕
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+        {isBlobConfigured() ? (
+          <PhotoUploader bakeId={bake.id} />
+        ) : (
+          <p className="mt-2 rounded-xl border border-butter-dark bg-butter/40 p-3 text-sm text-latte">
+            Photo uploads aren&apos;t set up yet. Add a Vercel Blob store and the
+            BLOB_READ_WRITE_TOKEN env var to enable them.
+          </p>
+        )}
+        {bake.photos.length === 0 && isBlobConfigured() && (
+          <p className="mt-2 text-xs text-latte">
+            Snap a shot of tonight&apos;s bake — photos are downscaled
+            automatically and saved here.
+          </p>
+        )}
       </section>
 
       <section className="mt-4 rounded-2xl border border-butter-dark bg-white/60 p-4 text-center">
