@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
+import { BakeHistory } from "@/components/bake-history";
 import { versionName } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
@@ -40,17 +41,6 @@ export default async function BakeRecapPage({
 
   if (!recipe) notFound();
 
-  const recentBakes = recipe.versions
-    .flatMap((v) =>
-      v.bakes.map((b) => ({
-        ...b,
-        versionNumber: v.versionNumber,
-        versionLabel: v.label,
-      })),
-    )
-    .sort((a, b) => (a.bakedOn < b.bakedOn ? 1 : -1))
-    .slice(0, 3);
-
   return (
     <main className="px-4 pt-8">
       <Link href="/bake" className="text-sm text-latte">
@@ -59,48 +49,8 @@ export default async function BakeRecapPage({
       <h1 className="mt-2 text-3xl">{recipe.name}</h1>
       <p className="mt-1 text-latte">Step 2 · Pick or tweak a version</p>
 
-      {recentBakes.length > 0 && (
-        <section className="mt-5 rounded-2xl border border-butter-dark bg-butter/50 p-4">
-          <h2 className="text-base">Last time&hellip;</h2>
-          <ul className="mt-2 space-y-2 text-sm">
-            {recentBakes.map((bake) => {
-              const ratings = bake.feedback.map((f) => Number(f.overall));
-              const avg =
-                ratings.length > 0
-                  ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
-                  : null;
-              const bestNote = bake.feedback.find((f) => f.notes)?.notes;
-              return (
-                <li key={bake.id}>
-                  <span className="font-medium">
-                    {versionName(
-                      { label: bake.versionLabel, versionNumber: bake.versionNumber },
-                      { short: true },
-                    )}{" "}
-                    · {bake.bakedOn}
-                  </span>
-                  {avg && <span className="text-honey"> · ★ {avg}</span>}
-                  {bake.rating && (
-                    <span className="text-latte">
-                      {" "}
-                      · Emma ★ {Number(bake.rating).toFixed(1)}
-                    </span>
-                  )}
-                  {bestNote && (
-                    <span className="text-latte">
-                      {" "}
-                      · &ldquo;{bestNote.slice(0, 60)}
-                      {bestNote.length > 60 ? "…" : ""}&rdquo;
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-      <ul className="mt-5 space-y-3 pb-8">
+      <h2 className="mt-8 text-xl">Versions</h2>
+      <ul className="mt-3 space-y-3">
         {recipe.versions.map((version, idx) => {
           const allRatings = version.bakes.flatMap((b) =>
             b.feedback.map((f) => Number(f.overall)),
@@ -171,6 +121,13 @@ export default async function BakeRecapPage({
           );
         })}
       </ul>
+
+      <div className="pb-8">
+        <BakeHistory
+          versions={recipe.versions}
+          empty="No bakes logged yet — pick a version above to bake the first one."
+        />
+      </div>
     </main>
   );
 }

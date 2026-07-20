@@ -4,6 +4,7 @@ import { asc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { versionName } from "@/lib/version";
+import { BakeHistory } from "@/components/bake-history";
 import { VersionList, type VersionRow } from "./version-list";
 
 export const dynamic = "force-dynamic";
@@ -62,11 +63,6 @@ export default async function RecipeDetailPage({
     steps: version.steps,
   }));
 
-  // Every bake across every version, newest first — the recipe's full history.
-  const history = recipe.versions
-    .flatMap((version) => version.bakes.map((b) => ({ bake: b, version })))
-    .sort((a, b) => (a.bake.bakedOn < b.bake.bakedOn ? 1 : -1));
-
   return (
     <main className="px-4 pt-8">
       <Link href="/recipes" className="text-sm text-latte">
@@ -107,42 +103,12 @@ export default async function RecipeDetailPage({
 
       <VersionList versions={versionRows} />
 
-      <section className="mt-8">
-        <h2 className="text-xl">Bake history</h2>
-        {history.length === 0 ? (
-          <p className="mt-2 rounded-2xl border border-butter-dark bg-butter/60 p-5 text-sm text-latte">
-            No bakes yet. Hit &ldquo;Bake this tonight&rdquo; below to log the
-            first one.
-          </p>
-        ) : (
-          <ul className="mt-3 space-y-2">
-            {history.map(({ bake, version }) => {
-              const avg = avgOverall(bake.feedback);
-              return (
-                <li key={bake.id}>
-                  <Link
-                    href={`/bakes/${bake.id}`}
-                    className="block rounded-xl border border-butter-dark bg-white/60 px-4 py-3 active:bg-butter/50"
-                  >
-                    <div className="flex items-baseline justify-between">
-                      <span className="font-medium">
-                        {versionName(version, { short: true })}
-                        {bake.isBakeoff && " · bake-off"}
-                      </span>
-                      {avg && <span className="text-sm text-honey">★ {avg}</span>}
-                    </div>
-                    <p className="mt-0.5 text-sm text-latte">
-                      {bake.bakedOn} · {bake.feedback.length} taster
-                      {bake.feedback.length === 1 ? "" : "s"}
-                      {bake.rating && ` · Emma ★ ${Number(bake.rating).toFixed(1)}`}
-                    </p>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+      <BakeHistory
+        versions={recipe.versions}
+        empty={
+          <>No bakes yet. Hit &ldquo;Bake this tonight&rdquo; below to log the first one.</>
+        }
+      />
 
       <div className="mt-8 space-y-2 pb-8">
         <Link

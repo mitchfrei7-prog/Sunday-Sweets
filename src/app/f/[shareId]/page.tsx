@@ -85,6 +85,14 @@ export default async function TasterPage({
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center px-5 py-10 text-center">
+      {by === "emma" && (
+        <Link
+          href={`/bakes/${bake.id}`}
+          className="self-start text-sm text-latte"
+        >
+          ← Back to the bake
+        </Link>
+      )}
       <span className="text-5xl" aria-hidden>
         🍪
       </span>
