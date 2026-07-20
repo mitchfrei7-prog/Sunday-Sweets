@@ -45,18 +45,40 @@ export default async function TasterPage({
   }
 
   if (done) {
+    const emma = by === "emma";
     return (
       <Shell>
         <p className="mt-3 text-lg">Feedback sent — thank you!</p>
         <p className="mt-2 text-latte">
-          Emma reads every word. Your taste buds are shaping the next batch.
+          {emma
+            ? "Saved. Log another taster's feedback, or head back to the app."
+            : "Emma reads every word. Your taste buds are shaping the next batch."}
         </p>
-        <Link
-          href={`/f/${shareId}`}
-          className="mt-6 rounded-xl border border-terracotta px-5 py-2.5 text-sm font-medium text-terracotta-dark"
-        >
-          Hand the phone to the next taster
-        </Link>
+        <div className="mt-6 flex flex-col items-stretch gap-2">
+          {emma ? (
+            <>
+              <Link
+                href={`/f/${shareId}?by=emma`}
+                className="rounded-xl border border-terracotta px-5 py-2.5 text-center text-sm font-medium text-terracotta-dark"
+              >
+                Enter another person&apos;s feedback
+              </Link>
+              <Link
+                href={`/bakes/${bake.id}`}
+                className="rounded-xl bg-terracotta px-5 py-2.5 text-center text-sm font-medium text-cream"
+              >
+                Back to the bake
+              </Link>
+            </>
+          ) : (
+            <Link
+              href={`/f/${shareId}`}
+              className="rounded-xl border border-terracotta px-5 py-2.5 text-center text-sm font-medium text-terracotta-dark"
+            >
+              Hand the phone to the next taster
+            </Link>
+          )}
+        </div>
       </Shell>
     );
   }

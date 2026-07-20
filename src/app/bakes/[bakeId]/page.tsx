@@ -76,11 +76,32 @@ export default async function BakeWrapUpPage({
         <h2 className="text-lg">Emma&apos;s wrap-up</h2>
         <form action={saveBakeReviewAction} className="mt-3 space-y-4">
           <input type="hidden" name="bakeId" value={bake.id} />
-          <StarRatingInput
-            name="rating"
-            label="Your rating"
-            defaultValue={bake.rating ? Number(bake.rating) : 0}
-          />
+          <div className="space-y-3">
+            <StarRatingInput
+              name="rating"
+              label="Overall"
+              defaultValue={bake.rating ? Number(bake.rating) : 0}
+            />
+            <StarRatingInput
+              name="texture"
+              label="Texture"
+              defaultValue={bake.texture ? Number(bake.texture) : 0}
+            />
+            <StarRatingInput
+              name="taste"
+              label="Taste"
+              defaultValue={bake.taste ? Number(bake.taste) : 0}
+            />
+            <StarRatingInput
+              name="moisture"
+              label="Moisture"
+              defaultValue={bake.moisture ? Number(bake.moisture) : 0}
+            />
+          </div>
+          <p className="text-xs text-latte">
+            Rate as much or as little as you like — 5 stars = perfect. The
+            breakdown helps the AI coach later.
+          </p>
           <textarea
             name="notes"
             rows={3}

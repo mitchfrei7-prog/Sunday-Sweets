@@ -72,18 +72,27 @@ async function RecipePicker() {
                     : `${bakes.length} bake${bakes.length === 1 ? "" : "s"} · last ${lastBaked}`}
                 </p>
               </Link>
-              {latestVersion && latestVersion.ingredients.length > 0 && (
-                <details className="mt-2 border-t border-butter-dark/60 pt-2">
-                  <summary className="cursor-pointer text-sm text-terracotta-dark">
-                    Ingredients (v{latestVersion.versionNumber})
-                  </summary>
-                  <ul className="mt-2 list-disc space-y-0.5 pl-5 text-sm">
-                    {latestVersion.ingredients.map((ing, i) => (
-                      <li key={i}>{ing}</li>
-                    ))}
-                  </ul>
-                </details>
-              )}
+              {latestVersion &&
+                (latestVersion.ingredients.length > 0 ||
+                  latestVersion.steps.length > 0) && (
+                  <details className="mt-2 border-t border-butter-dark/60 pt-2">
+                    <summary className="cursor-pointer text-sm text-terracotta-dark">
+                      Ingredients &amp; steps (v{latestVersion.versionNumber})
+                    </summary>
+                    <div className="mt-2 space-y-3 text-sm">
+                      <ul className="list-disc space-y-0.5 pl-5">
+                        {latestVersion.ingredients.map((ing, i) => (
+                          <li key={i}>{ing}</li>
+                        ))}
+                      </ul>
+                      <ol className="list-decimal space-y-1 pl-5">
+                        {latestVersion.steps.map((step, i) => (
+                          <li key={i}>{step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </details>
+                )}
             </div>
           </li>
         );

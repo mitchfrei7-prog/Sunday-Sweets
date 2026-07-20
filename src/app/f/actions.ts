@@ -83,5 +83,5 @@ export async function submitFeedbackAction(
 
   revalidatePath(`/bakes/${bake.id}`);
   revalidatePath("/");
-  redirect(`/f/${shareId}?done=1`);
+  redirect(`/f/${shareId}?done=1${enteredBy === "emma" ? "&by=emma" : ""}`);
 }

@@ -2,16 +2,9 @@ import Link from "next/link";
 import { desc } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
+import { RecipeManager } from "./recipe-manager";
 
 export const dynamic = "force-dynamic";
-
-const categoryLabels: Record<string, string> = {
-  cookies: "Cookies",
-  brownies: "Brownies",
-  cake: "Cake",
-  bites: "Energy bites",
-  other: "Other",
-};
 
 export default async function RecipesPage() {
   return (
@@ -48,28 +41,14 @@ async function RecipeList() {
   }
 
   return (
-    <ul className="mt-5 space-y-2">
-      {allRecipes.map((recipe) => (
-        <li key={recipe.id}>
-          <Link
-            href={`/recipes/${recipe.id}`}
-            className="block rounded-xl border border-butter-dark bg-white/60 px-4 py-3 active:bg-butter/50"
-          >
-            <div className="flex items-baseline justify-between">
-              <span className="font-medium">{recipe.name}</span>
-              <span className="text-xs text-latte">
-                {recipe.versions.length} version
-                {recipe.versions.length === 1 ? "" : "s"}
-              </span>
-            </div>
-            <p className="mt-0.5 text-sm text-latte">
-              {categoryLabels[recipe.category]}
-              {recipe.gfType === "gf_native" && " · GF-native"}
-              {recipe.gfType === "substituted" && " · 1:1 substituted"}
-            </p>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <RecipeManager
+      recipes={allRecipes.map((recipe) => ({
+        id: recipe.id,
+        name: recipe.name,
+        category: recipe.category,
+        gfType: recipe.gfType,
+        versionCount: recipe.versions.length,
+      }))}
+    />
   );
 }

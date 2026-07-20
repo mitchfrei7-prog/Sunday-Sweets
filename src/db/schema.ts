@@ -83,8 +83,13 @@ export const bakes = pgTable("bakes", {
     .notNull()
     .references(() => versions.id, { onDelete: "cascade" }),
   bakedOn: date("baked_on").notNull(),
-  // Emma's own overall rating, 0.5–5.0 in half-star steps
+  // Emma's own wrap-up ratings, 0.5–5.0 in half-star steps. Overall (rating)
+  // plus the same three dimensions tasters rate; all optional. Kept on the bake
+  // row (her self-assessment) so they never skew taster averages.
   rating: numeric("rating", { precision: 2, scale: 1 }),
+  texture: numeric("texture", { precision: 2, scale: 1 }),
+  taste: numeric("taste", { precision: 2, scale: 1 }),
+  moisture: numeric("moisture", { precision: 2, scale: 1 }),
   notes: text("notes"),
   batchSize: text("batch_size"),
   flourBlendId: uuid("flour_blend_id").references(() => flourBlends.id),

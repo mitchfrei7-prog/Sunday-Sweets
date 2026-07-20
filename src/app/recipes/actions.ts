@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { extractRecipeFromUrl, type ExtractedRecipe } from "@/lib/extract";
 
@@ -84,4 +85,19 @@ export async function createRecipeAction(formData: FormData) {
 
   revalidatePath("/recipes");
   redirect(`/recipes/${recipe.id}`);
+}
+
+/**
+ * Delete a recipe and everything under it. Versions → bakes → feedback/photos
+ * and any recipe-scoped AI insights all cascade via their FK onDelete rules.
+ */
+export async function deleteRecipeAction(formData: FormData) {
+  const recipeId = String(formData.get("recipeId") ?? "");
+  if (!recipeId) throw new Error("Missing recipe id.");
+
+  const db = getDb();
+  await db.delete(schema.recipes).where(eq(schema.recipes.id, recipeId));
+
+  revalidatePath("/recipes");
+  revalidatePath("/");
 }
