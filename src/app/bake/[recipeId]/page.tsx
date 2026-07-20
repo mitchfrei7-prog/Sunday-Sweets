@@ -5,6 +5,7 @@ import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { BakeHistory } from "@/components/bake-history";
 import { versionName } from "@/lib/version";
+import { averageStars } from "@/lib/ratings";
 
 export const dynamic = "force-dynamic";
 
@@ -52,15 +53,7 @@ export default async function BakeRecapPage({
       <h2 className="mt-8 text-xl">Versions</h2>
       <ul className="mt-3 space-y-3">
         {recipe.versions.map((version, idx) => {
-          const allRatings = version.bakes.flatMap((b) =>
-            b.feedback.map((f) => Number(f.overall)),
-          );
-          const avg =
-            allRatings.length > 0
-              ? (
-                  allRatings.reduce((a, b) => a + b, 0) / allRatings.length
-                ).toFixed(1)
-              : null;
+          const avg = averageStars(version.bakes);
 
           return (
             <li

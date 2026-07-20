@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { versionName } from "@/lib/version";
+import { averageStars } from "@/lib/ratings";
+import { formatBakeDate } from "@/lib/dates";
 
 type Feedback = { overall: string | null };
 type Bake = {
@@ -10,12 +12,6 @@ type Bake = {
   feedback: Feedback[];
 };
 type Version = { label: string | null; versionNumber: number; bakes: Bake[] };
-
-function avgOverall(feedback: Feedback[]): string | null {
-  const ratings = feedback.map((f) => Number(f.overall)).filter((n) => n > 0);
-  if (ratings.length === 0) return null;
-  return (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
-}
 
 /**
  * Every bake across every version of a recipe, newest first — each links to its
@@ -43,7 +39,7 @@ export function BakeHistory({
       ) : (
         <ul className="mt-3 space-y-2">
           {history.map(({ bake, version }) => {
-            const avg = avgOverall(bake.feedback);
+            const avg = averageStars([bake]);
             return (
               <li key={bake.id}>
                 <Link
@@ -58,8 +54,8 @@ export function BakeHistory({
                     {avg && <span className="text-sm text-honey">★ {avg}</span>}
                   </div>
                   <p className="mt-0.5 text-sm text-latte">
-                    {bake.bakedOn} · {bake.feedback.length} taster
-                    {bake.feedback.length === 1 ? "" : "s"}
+                    {formatBakeDate(bake.bakedOn)} · {bake.feedback.length}{" "}
+                    taster{bake.feedback.length === 1 ? "" : "s"}
                     {bake.rating &&
                       ` · Emma ★ ${Number(bake.rating).toFixed(1)}`}
                   </p>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
+import { formatBakeDate } from "@/lib/dates";
 import { TasterForm } from "./taster-form";
 
 export const dynamic = "force-dynamic";
@@ -98,7 +99,7 @@ export default async function TasterPage({
       </span>
       <h1 className="mt-3 text-3xl">How was it?</h1>
       <p className="mt-1 text-latte">
-        {bake.version.recipe.name} · baked {bake.bakedOn}
+        {bake.version.recipe.name} · baked {formatBakeDate(bake.bakedOn)}
       </p>
       <TasterForm
         shareId={shareId}

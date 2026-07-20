@@ -7,6 +7,7 @@ import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { versionName } from "@/lib/version";
+import { formatBakeDate } from "@/lib/dates";
 import { WrapUpForm } from "./wrap-up-form";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +58,8 @@ export default async function BakeWrapUpPage({
         {bake.version.recipe.name}
       </h1>
       <p className="mt-1 text-latte">
-        {versionName(bake.version, { short: true })} · baked {bake.bakedOn}
+        {versionName(bake.version, { short: true })} · baked{" "}
+        {formatBakeDate(bake.bakedOn)}
         {bake.flourBlend && ` · ${bake.flourBlend.name}`}
         {bake.isBakeoff && " · bake-off"}
       </p>

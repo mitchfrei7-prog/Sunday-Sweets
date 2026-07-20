@@ -3,6 +3,8 @@ import { desc } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { versionName } from "@/lib/version";
+import { averageStars } from "@/lib/ratings";
+import { formatBakeDate } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -53,11 +55,7 @@ async function RecentBakes() {
       <h2 className="text-xl">Recent bakes</h2>
       <ul className="mt-3 space-y-2">
         {recent.map((bake) => {
-          const ratings = bake.feedback.map((f) => Number(f.overall));
-          const avg =
-            ratings.length > 0
-              ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
-              : null;
+          const avg = averageStars([bake]);
           return (
             <li key={bake.id}>
               <Link
@@ -74,7 +72,7 @@ async function RecentBakes() {
                   )}
                 </div>
                 <p className="mt-0.5 text-sm text-latte">
-                  {bake.bakedOn} · {bake.feedback.length} taster
+                  {formatBakeDate(bake.bakedOn)} · {bake.feedback.length} taster
                   {bake.feedback.length === 1 ? "" : "s"}
                 </p>
               </Link>

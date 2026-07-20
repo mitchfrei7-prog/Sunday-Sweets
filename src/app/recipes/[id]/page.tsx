@@ -4,16 +4,11 @@ import { asc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { versionName } from "@/lib/version";
+import { averageStars } from "@/lib/ratings";
 import { BakeHistory } from "@/components/bake-history";
 import { VersionList, type VersionRow } from "./version-list";
 
 export const dynamic = "force-dynamic";
-
-function avgOverall(feedback: { overall: string | null }[]): string | null {
-  const ratings = feedback.map((f) => Number(f.overall)).filter((n) => n > 0);
-  if (ratings.length === 0) return null;
-  return (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
-}
 
 export default async function RecipeDetailPage({
   params,
@@ -55,7 +50,7 @@ export default async function RecipeDetailPage({
     label: version.label,
     name: versionName(version),
     isLatest: version.versionNumber === maxNumber,
-    avg: avgOverall(version.bakes.flatMap((b) => b.feedback)),
+    avg: averageStars(version.bakes),
     bakeCount: version.bakes.length,
     diffSummary: version.diffSummary,
     why: version.why,
