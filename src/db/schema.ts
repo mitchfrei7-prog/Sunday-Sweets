@@ -59,6 +59,8 @@ export const versions = pgTable("versions", {
     .references(() => recipes.id, { onDelete: "cascade" }),
   parentVersionId: uuid("parent_version_id"),
   versionNumber: integer("version_number").notNull().default(1),
+  // Optional custom name, e.g. "½ flour ½ oats"; falls back to "Version N"
+  label: text("label"),
   ingredients: jsonb("ingredients").$type<string[]>().notNull().default([]),
   steps: jsonb("steps").$type<string[]>().notNull().default([]),
   // Human-readable diff from the parent version, e.g. "−¼ cup sugar, +1 tsp xanthan gum"

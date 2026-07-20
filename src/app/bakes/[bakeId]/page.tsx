@@ -5,9 +5,9 @@ import QRCode from "qrcode";
 import { desc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
-import { StarRatingInput } from "@/components/star-rating-input";
 import { CopyLinkButton } from "@/components/copy-link-button";
-import { saveBakeReviewAction } from "../actions";
+import { versionName } from "@/lib/version";
+import { WrapUpForm } from "./wrap-up-form";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,7 @@ export default async function BakeWrapUpPage({
         {bake.version.recipe.name}
       </h1>
       <p className="mt-1 text-latte">
-        v{bake.version.versionNumber} · baked {bake.bakedOn}
+        {versionName(bake.version, { short: true })} · baked {bake.bakedOn}
         {bake.flourBlend && ` · ${bake.flourBlend.name}`}
         {bake.isBakeoff && " · bake-off"}
       </p>
@@ -74,48 +74,16 @@ export default async function BakeWrapUpPage({
 
       <section className="mt-6 rounded-2xl border border-butter-dark bg-white/60 p-4">
         <h2 className="text-lg">Emma&apos;s wrap-up</h2>
-        <form action={saveBakeReviewAction} className="mt-3 space-y-4">
-          <input type="hidden" name="bakeId" value={bake.id} />
-          <div className="space-y-3">
-            <StarRatingInput
-              name="rating"
-              label="Overall"
-              defaultValue={bake.rating ? Number(bake.rating) : 0}
-            />
-            <StarRatingInput
-              name="texture"
-              label="Texture"
-              defaultValue={bake.texture ? Number(bake.texture) : 0}
-            />
-            <StarRatingInput
-              name="taste"
-              label="Taste"
-              defaultValue={bake.taste ? Number(bake.taste) : 0}
-            />
-            <StarRatingInput
-              name="moisture"
-              label="Moisture"
-              defaultValue={bake.moisture ? Number(bake.moisture) : 0}
-            />
-          </div>
-          <p className="text-xs text-latte">
-            Rate as much or as little as you like — 5 stars = perfect. The
-            breakdown helps the AI coach later.
-          </p>
-          <textarea
-            name="notes"
-            rows={3}
-            defaultValue={bake.notes ?? ""}
-            placeholder="How did it go? Oven quirks, texture, what you'd change…"
-            className="w-full rounded-xl border border-butter-dark bg-white px-3 py-2.5"
-          />
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-terracotta py-2.5 text-sm font-medium text-cream"
-          >
-            Save wrap-up
-          </button>
-        </form>
+        <WrapUpForm
+          bakeId={bake.id}
+          initial={{
+            rating: bake.rating ? Number(bake.rating) : 0,
+            texture: bake.texture ? Number(bake.texture) : 0,
+            taste: bake.taste ? Number(bake.taste) : 0,
+            moisture: bake.moisture ? Number(bake.moisture) : 0,
+            notes: bake.notes ?? "",
+          }}
+        />
       </section>
 
       <section className="mt-4 rounded-2xl border border-butter-dark bg-white/60 p-4 text-center">

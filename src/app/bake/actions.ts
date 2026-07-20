@@ -10,8 +10,12 @@ import { fetchCurrentWeather } from "@/lib/weather";
 export async function createVersionAction(formData: FormData) {
   const recipeId = String(formData.get("recipeId") ?? "");
   const parentVersionId = String(formData.get("parentVersionId") ?? "");
+  const label = String(formData.get("label") ?? "").trim();
   const diffSummary = String(formData.get("diffSummary") ?? "").trim();
   const why = String(formData.get("why") ?? "").trim();
+  // "recipe" returns to the recipe page (just versioning); default continues
+  // into the bake log (the Bake Tonight flow).
+  const next = String(formData.get("next") ?? "");
   const ingredients = String(formData.get("ingredients") ?? "")
     .split("\n")
     .map((l) => l.trim())
@@ -37,6 +41,7 @@ export async function createVersionAction(formData: FormData) {
       recipeId,
       parentVersionId: parentVersionId || null,
       versionNumber: (maxNumber ?? 0) + 1,
+      label: label || null,
       ingredients,
       steps,
       diffSummary: diffSummary || null,
@@ -45,6 +50,7 @@ export async function createVersionAction(formData: FormData) {
     .returning();
 
   revalidatePath(`/recipes/${recipeId}`);
+  if (next === "recipe") redirect(`/recipes/${recipeId}`);
   redirect(`/bake/${recipeId}/log?v=${version.id}`);
 }
 

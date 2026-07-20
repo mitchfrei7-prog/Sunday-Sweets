@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
+import { versionName } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,11 @@ export default async function BakeRecapPage({
 
   const recentBakes = recipe.versions
     .flatMap((v) =>
-      v.bakes.map((b) => ({ ...b, versionNumber: v.versionNumber })),
+      v.bakes.map((b) => ({
+        ...b,
+        versionNumber: v.versionNumber,
+        versionLabel: v.label,
+      })),
     )
     .sort((a, b) => (a.bakedOn < b.bakedOn ? 1 : -1))
     .slice(0, 3);
@@ -68,7 +73,11 @@ export default async function BakeRecapPage({
               return (
                 <li key={bake.id}>
                   <span className="font-medium">
-                    v{bake.versionNumber} · {bake.bakedOn}
+                    {versionName(
+                      { label: bake.versionLabel, versionNumber: bake.versionNumber },
+                      { short: true },
+                    )}{" "}
+                    · {bake.bakedOn}
                   </span>
                   {avg && <span className="text-honey"> · ★ {avg}</span>}
                   {bake.rating && (
@@ -112,7 +121,7 @@ export default async function BakeRecapPage({
             >
               <div className="flex items-baseline justify-between">
                 <span className="font-medium">
-                  Version {version.versionNumber}
+                  {versionName(version)}
                   {idx === 0 && " · latest"}
                 </span>
                 <span className="text-sm text-honey">

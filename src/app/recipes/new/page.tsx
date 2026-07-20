@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import {
   createRecipeAction,
@@ -35,7 +36,10 @@ export default function NewRecipePage() {
 
   return (
     <main className="px-4 pt-8">
-      <h1 className="text-3xl">Add a recipe</h1>
+      <Link href="/recipes" className="text-sm text-latte">
+        ← Recipes
+      </Link>
+      <h1 className="mt-2 text-3xl">Add a recipe</h1>
 
       <form action={extractFormAction} className="mt-5">
         <label className="text-sm font-medium" htmlFor="url">
@@ -166,12 +170,20 @@ export default function NewRecipePage() {
           />
         </Field>
 
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-terracotta py-3 font-medium text-cream active:scale-[0.99]"
-        >
-          Save recipe
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href="/recipes"
+            className="flex-1 rounded-xl border border-butter-dark bg-white py-3 text-center font-medium text-chocolate active:scale-[0.99]"
+          >
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            className="flex-1 rounded-xl bg-terracotta py-3 font-medium text-cream active:scale-[0.99]"
+          >
+            Save recipe
+          </button>
+        </div>
       </form>
     </main>
   );

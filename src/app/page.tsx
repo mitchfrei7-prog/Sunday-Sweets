@@ -2,6 +2,7 @@ import Link from "next/link";
 import { desc } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
+import { versionName } from "@/lib/version";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,8 @@ async function RecentBakes() {
               >
                 <div className="flex items-baseline justify-between">
                   <span className="font-medium">
-                    {bake.version.recipe.name} · v{bake.version.versionNumber}
+                    {bake.version.recipe.name} ·{" "}
+                    {versionName(bake.version, { short: true })}
                   </span>
                   {avg && (
                     <span className="text-sm text-honey">★ {avg}</span>

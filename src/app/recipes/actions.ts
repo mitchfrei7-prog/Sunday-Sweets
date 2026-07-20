@@ -101,3 +101,63 @@ export async function deleteRecipeAction(formData: FormData) {
   revalidatePath("/recipes");
   revalidatePath("/");
 }
+
+export async function renameRecipeAction(formData: FormData) {
+  const recipeId = String(formData.get("recipeId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!recipeId) throw new Error("Missing recipe id.");
+  if (!name) throw new Error("The recipe needs a name.");
+
+  const db = getDb();
+  await db
+    .update(schema.recipes)
+    .set({ name })
+    .where(eq(schema.recipes.id, recipeId));
+
+  revalidatePath("/recipes");
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/");
+}
+
+/** Rename (or clear) a version's custom label. Empty resets to "Version N". */
+export async function renameVersionAction(formData: FormData) {
+  const versionId = String(formData.get("versionId") ?? "");
+  const recipeId = String(formData.get("recipeId") ?? "");
+  const label = String(formData.get("label") ?? "").trim();
+  if (!versionId) throw new Error("Missing version id.");
+
+  const db = getDb();
+  await db
+    .update(schema.versions)
+    .set({ label: label || null })
+    .where(eq(schema.versions.id, versionId));
+
+  if (recipeId) revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/");
+}
+
+/**
+ * Delete a single version (cascades to its bakes and their feedback). Refuses
+ * to remove a recipe's last version — delete the whole recipe instead.
+ */
+export async function deleteVersionAction(formData: FormData) {
+  const versionId = String(formData.get("versionId") ?? "");
+  const recipeId = String(formData.get("recipeId") ?? "");
+  if (!versionId || !recipeId) throw new Error("Missing version or recipe id.");
+
+  const db = getDb();
+  const remaining = await db.query.versions.findMany({
+    where: eq(schema.versions.recipeId, recipeId),
+    columns: { id: true },
+  });
+  if (remaining.length <= 1) {
+    throw new Error(
+      "Can't delete the only version — delete the whole recipe instead.",
+    );
+  }
+
+  await db.delete(schema.versions).where(eq(schema.versions.id, versionId));
+
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/");
+}

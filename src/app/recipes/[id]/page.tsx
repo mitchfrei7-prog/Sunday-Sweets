@@ -3,8 +3,16 @@ import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
+import { versionName } from "@/lib/version";
+import { VersionList, type VersionRow } from "./version-list";
 
 export const dynamic = "force-dynamic";
+
+function avgOverall(feedback: { overall: string | null }[]): string | null {
+  const ratings = feedback.map((f) => Number(f.overall)).filter((n) => n > 0);
+  if (ratings.length === 0) return null;
+  return (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
+}
 
 export default async function RecipeDetailPage({
   params,
@@ -33,6 +41,31 @@ export default async function RecipeDetailPage({
   });
 
   if (!recipe) notFound();
+
+  const maxNumber = Math.max(...recipe.versions.map((v) => v.versionNumber));
+  const latestVersion = recipe.versions.find(
+    (v) => v.versionNumber === maxNumber,
+  );
+
+  const versionRows: VersionRow[] = recipe.versions.map((version) => ({
+    id: version.id,
+    recipeId: recipe.id,
+    versionNumber: version.versionNumber,
+    label: version.label,
+    name: versionName(version),
+    isLatest: version.versionNumber === maxNumber,
+    avg: avgOverall(version.bakes.flatMap((b) => b.feedback)),
+    bakeCount: version.bakes.length,
+    diffSummary: version.diffSummary,
+    why: version.why,
+    ingredients: version.ingredients,
+    steps: version.steps,
+  }));
+
+  // Every bake across every version, newest first — the recipe's full history.
+  const history = recipe.versions
+    .flatMap((version) => version.bakes.map((b) => ({ bake: b, version })))
+    .sort((a, b) => (a.bake.bakedOn < b.bake.bakedOn ? 1 : -1));
 
   return (
     <main className="px-4 pt-8">
@@ -72,82 +105,60 @@ export default async function RecipeDetailPage({
         </div>
       )}
 
-      <h2 className="mt-8 text-xl">Versions</h2>
-      <ul className="mt-3 space-y-3">
-        {recipe.versions.map((version) => {
-          const allRatings = version.bakes.flatMap((b) =>
-            b.feedback.map((f) => Number(f.overall)),
-          );
-          const avg =
-            allRatings.length > 0
-              ? (
-                  allRatings.reduce((a, b) => a + b, 0) / allRatings.length
-                ).toFixed(1)
-              : null;
-          const latest =
-            version.versionNumber ===
-            Math.max(...recipe.versions.map((v) => v.versionNumber));
+      <VersionList versions={versionRows} />
 
-          return (
-            <li
-              key={version.id}
-              className={`rounded-xl border bg-white/60 p-4 ${
-                latest ? "border-terracotta" : "border-butter-dark"
-              }`}
-            >
-              <div className="flex items-baseline justify-between">
-                <span className="font-medium">
-                  Version {version.versionNumber}
-                  {version.versionNumber === 1 && " · original"}
-                </span>
-                <span className="text-sm text-honey">
-                  {avg ? `★ ${avg} avg` : "not baked yet"}
-                </span>
-              </div>
-              {version.diffSummary && (
-                <p className="mt-1 text-sm text-chocolate">
-                  {version.diffSummary}
-                </p>
-              )}
-              {version.why && (
-                <p className="mt-0.5 text-sm italic text-latte">
-                  &ldquo;{version.why}&rdquo;
-                </p>
-              )}
-              <p className="mt-1 text-xs text-latte">
-                {version.bakes.length} bake
-                {version.bakes.length === 1 ? "" : "s"}
-              </p>
+      <section className="mt-8">
+        <h2 className="text-xl">Bake history</h2>
+        {history.length === 0 ? (
+          <p className="mt-2 rounded-2xl border border-butter-dark bg-butter/60 p-5 text-sm text-latte">
+            No bakes yet. Hit &ldquo;Bake this tonight&rdquo; below to log the
+            first one.
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {history.map(({ bake, version }) => {
+              const avg = avgOverall(bake.feedback);
+              return (
+                <li key={bake.id}>
+                  <Link
+                    href={`/bakes/${bake.id}`}
+                    className="block rounded-xl border border-butter-dark bg-white/60 px-4 py-3 active:bg-butter/50"
+                  >
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-medium">
+                        {versionName(version, { short: true })}
+                        {bake.isBakeoff && " · bake-off"}
+                      </span>
+                      {avg && <span className="text-sm text-honey">★ {avg}</span>}
+                    </div>
+                    <p className="mt-0.5 text-sm text-latte">
+                      {bake.bakedOn} · {bake.feedback.length} taster
+                      {bake.feedback.length === 1 ? "" : "s"}
+                      {bake.rating && ` · Emma ★ ${Number(bake.rating).toFixed(1)}`}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
-              <details className="mt-2">
-                <summary className="cursor-pointer text-sm text-terracotta-dark">
-                  Ingredients &amp; steps
-                </summary>
-                <div className="mt-2 space-y-3 text-sm">
-                  <ul className="list-disc space-y-0.5 pl-5">
-                    {version.ingredients.map((ing, i) => (
-                      <li key={i}>{ing}</li>
-                    ))}
-                  </ul>
-                  <ol className="list-decimal space-y-1 pl-5">
-                    {version.steps.map((step, i) => (
-                      <li key={i}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
-              </details>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-6 pb-8">
+      <div className="mt-8 space-y-2 pb-8">
         <Link
-          href="/bake"
-          className="block rounded-xl bg-terracotta py-3 text-center font-medium text-cream"
+          href={`/bake/${recipe.id}`}
+          className="block rounded-xl bg-terracotta py-3 text-center font-medium text-cream active:scale-[0.99]"
         >
           Bake this tonight
         </Link>
+        {latestVersion && (
+          <Link
+            href={`/bake/${recipe.id}/tweak?from=${latestVersion.id}&next=recipe`}
+            className="block rounded-xl border border-terracotta py-3 text-center font-medium text-terracotta-dark active:scale-[0.99]"
+          >
+            Tweak into a new version
+          </Link>
+        )}
       </div>
     </main>
   );

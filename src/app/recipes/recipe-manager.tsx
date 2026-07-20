@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { deleteRecipeAction } from "./actions";
+import { deleteRecipeAction, renameRecipeAction } from "./actions";
 
 export type RecipeRow = {
   id: string;
@@ -41,6 +41,7 @@ function RowBody({ recipe }: { recipe: RecipeRow }) {
 export function RecipeManager({ recipes }: { recipes: RecipeRow[] }) {
   const [editing, setEditing] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [renameId, setRenameId] = useState<string | null>(null);
 
   return (
     <>
@@ -50,6 +51,7 @@ export function RecipeManager({ recipes }: { recipes: RecipeRow[] }) {
           onClick={() => {
             setEditing((e) => !e);
             setConfirmId(null);
+            setRenameId(null);
           }}
           className="rounded-full px-3 py-1 text-sm font-medium text-terracotta-dark active:bg-butter/60"
         >
@@ -77,18 +79,57 @@ export function RecipeManager({ recipes }: { recipes: RecipeRow[] }) {
                 </Link>
               )}
               {editing && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setConfirmId((id) => (id === recipe.id ? null : recipe.id))
-                  }
-                  aria-label={`Delete ${recipe.name}`}
-                  className="flex w-14 shrink-0 items-center justify-center border-l border-butter-dark bg-terracotta/10 text-lg text-terracotta-dark active:bg-terracotta/20"
-                >
-                  🗑
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRenameId((id) => (id === recipe.id ? null : recipe.id));
+                      setConfirmId(null);
+                    }}
+                    aria-label={`Rename ${recipe.name}`}
+                    className="flex w-14 shrink-0 items-center justify-center border-l border-butter-dark bg-butter/40 text-lg text-terracotta-dark active:bg-butter/70"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConfirmId((id) => (id === recipe.id ? null : recipe.id));
+                      setRenameId(null);
+                    }}
+                    aria-label={`Delete ${recipe.name}`}
+                    className="flex w-14 shrink-0 items-center justify-center border-l border-butter-dark bg-terracotta/10 text-lg text-terracotta-dark active:bg-terracotta/20"
+                  >
+                    🗑
+                  </button>
+                </>
               )}
             </div>
+
+            {renameId === recipe.id && (
+              <div className="border-t border-butter-dark bg-butter/30 px-4 py-3">
+                <form
+                  action={renameRecipeAction}
+                  onSubmit={() => setRenameId(null)}
+                  className="flex gap-2"
+                >
+                  <input type="hidden" name="recipeId" value={recipe.id} />
+                  <input
+                    name="name"
+                    defaultValue={recipe.name}
+                    required
+                    aria-label="Recipe name"
+                    className="min-w-0 flex-1 rounded-lg border border-butter-dark bg-white px-3 py-2 text-sm"
+                  />
+                  <button
+                    type="submit"
+                    className="shrink-0 rounded-lg bg-terracotta px-4 py-2 text-sm font-medium text-cream active:scale-[0.99]"
+                  >
+                    Save
+                  </button>
+                </form>
+              </div>
+            )}
 
             {confirmId === recipe.id && (
               <div className="border-t border-butter-dark bg-butter/30 px-4 py-3">
