@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <mask id="bite">
+      <circle cx="256" cy="256" r="120" fill="white"/>
+      <circle cx="344" cy="172" r="50" fill="black"/>
+      <circle cx="368" cy="208" r="30" fill="black"/>
+      <circle cx="316" cy="146" r="26" fill="black"/>
+    </mask>
+  </defs>
+  <rect width="512" height="512" rx="115" fill="#D6D6FF"/>
+  <g stroke="#E8B84B" stroke-width="18" stroke-linecap="round">
+    <g transform="rotate(97.43 256 256)"><line x1="256" y1="122" x2="256" y2="84"/></g>
+    <g transform="rotate(148.86 256 256)"><line x1="256" y1="122" x2="256" y2="84"/></g>
+    <g transform="rotate(200.29 256 256)"><line x1="256" y1="122" x2="256" y2="84"/></g>
+    <g transform="rotate(251.71 256 256)"><line x1="256" y1="122" x2="256" y2="84"/></g>
+    <g transform="rotate(303.14 256 256)"><line x1="256" y1="122" x2="256" y2="84"/></g>
+    <g transform="rotate(354.57 256 256)"><line x1="256" y1="122" x2="256" y2="84"/></g>
+  </g>
+  <circle cx="256" cy="256" r="120" fill="#E3AB3E" mask="url(#bite)"/>
+  <circle cx="214" cy="238" r="15" fill="#5A3A1E"/>
+  <circle cx="252" cy="292" r="14" fill="#5A3A1E"/>
+  <circle cx="300" cy="300" r="13" fill="#5A3A1E"/>
+  <circle cx="204" cy="292" r="11" fill="#5A3A1E"/>
+  <circle cx="286" cy="240" r="10" fill="#5A3A1E"/>
+</svg>
