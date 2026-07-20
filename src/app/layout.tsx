@@ -24,9 +24,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#faf6ef",
+  themeColor: "#f4f4ff",
   width: "device-width",
   initialScale: 1,
+  // Extend under the notch/home indicator so env(safe-area-inset-*) is nonzero,
+  // letting the tab bar clear the iPhone home indicator.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -40,7 +43,9 @@ export default function RootLayout({
       className={`${fraunces.variable} ${geistSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <div className="mx-auto w-full max-w-md flex-1 pb-24">{children}</div>
+        <div className="mx-auto w-full max-w-md flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          {children}
+        </div>
         <TabBar />
       </body>
     </html>

@@ -50,7 +50,7 @@ export default async function BakeWrapUpPage({
   const qrDataUrl = await QRCode.toDataURL(shareUrl, {
     width: 220,
     margin: 1,
-    color: { dark: "#3e2a20", light: "#faf6ef" },
+    color: { dark: "#241f45", light: "#f4f4ff" },
   });
 
   return (

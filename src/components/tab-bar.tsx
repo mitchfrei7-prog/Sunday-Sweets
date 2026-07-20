@@ -20,7 +20,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed inset-x-0 bottom-0 border-t border-butter-dark bg-cream/95 backdrop-blur pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 border-t border-butter-dark bg-cream/95 backdrop-blur pb-[calc(env(safe-area-inset-bottom)+0.375rem)]"
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around">
         {tabs.map((tab) => {

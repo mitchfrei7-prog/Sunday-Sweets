@@ -1,17 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  /* Warm bakery palette — cream/butter/chocolate/terracotta */
-  --color-cream: #faf6ef;
-  --color-butter: #f3e8d3;
-  --color-butter-dark: #e6d5b8;
-  --color-terracotta: #c4622d;
-  --color-terracotta-dark: #96451c;
-  --color-terracotta-light: #f6e3d7;
-  --color-chocolate: #3e2a20;
-  --color-latte: #85705f;
-  --color-honey: #d9962e;
-  --color-sage: #6f7f5c;
+  /* Periwinkle / blue-violet palette, anchored on #D1D1FF. The legacy role
+     names (cream/butter/chocolate/terracotta…) are kept so every className
+     stays valid — only the values changed. Roles: cream = app background,
+     butter/butter-dark = surfaces & borders, terracotta* = primary action,
+     chocolate = ink, latte = muted text, honey = rating gold, sage = success. */
+  --color-cream: #f4f4ff;
+  --color-butter: #dcdcfb;
+  --color-butter-dark: #c1c1ef;
+  --color-terracotta: #5b57e0;
+  --color-terracotta-dark: #3f39ab;
+  --color-terracotta-light: #e6e5ff;
+  --color-chocolate: #241f45;
+  --color-latte: #66638f;
+  --color-honey: #d99a2e;
+  --color-sage: #4d9a86;
 
   --font-display: var(--font-fraunces);
   --font-sans: var(--font-geist-sans);

@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Emma's gluten-free baking lab notebook",
     start_url: "/",
     display: "standalone",
-    background_color: "#faf6ef",
-    theme_color: "#faf6ef",
+    background_color: "#f4f4ff",
+    theme_color: "#f4f4ff",
     icons: [
       {
         src: "/icon.svg",
