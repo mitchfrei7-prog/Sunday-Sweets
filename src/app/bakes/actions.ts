@@ -1,6 +1,7 @@
 "use server";
 
 import { randomBytes } from "crypto";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { del, put } from "@vercel/blob";
@@ -75,6 +76,31 @@ export async function saveBakeAction(
   revalidatePath(`/bakes/${bakeId}`);
   revalidatePath("/");
   return { saved: true };
+}
+
+/** Delete a bake and everything under it (feedback + photos cascade). */
+export async function deleteBakeAction(formData: FormData) {
+  const bakeId = String(formData.get("bakeId") ?? "");
+  if (!bakeId) throw new Error("Missing bake id.");
+
+  const db = getDb();
+  // Best-effort: remove photo blobs before the rows cascade away.
+  if (isBlobConfigured()) {
+    const photos = await db.query.bakePhotos.findMany({
+      where: eq(schema.bakePhotos.bakeId, bakeId),
+    });
+    for (const p of photos) {
+      try {
+        await del(p.url, { token: getBlobToken() });
+      } catch {
+        // ignore — the row still cascades
+      }
+    }
+  }
+
+  await db.delete(schema.bakes).where(eq(schema.bakes.id, bakeId));
+  revalidatePath("/");
+  redirect("/");
 }
 
 // ── Bake photos (Vercel Blob) ────────────────────────────────────────────────
