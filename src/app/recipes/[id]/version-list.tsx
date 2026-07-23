@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { BakeThisButton } from "@/app/bake/[recipeId]/bake-this-button";
 import { deleteVersionAction, renameVersionAction } from "../actions";
 
 export type VersionRow = {
@@ -39,6 +41,12 @@ export function VersionList({ versions }: { versions: VersionRow[] }) {
         </button>
       </div>
 
+      {!editing && (
+        <p className="mt-1 text-xs text-latte">
+          Tap a version&apos;s name to edit its ingredients &amp; steps.
+        </p>
+      )}
+
       <ul className="mt-3 space-y-3">
         {versions.map((version) => (
           <li
@@ -47,15 +55,43 @@ export function VersionList({ versions }: { versions: VersionRow[] }) {
               version.isLatest ? "border-terracotta" : "border-butter-dark"
             }`}
           >
-            <div className="flex items-baseline justify-between">
-              <span className="font-medium">
-                {version.name}
-                {version.versionNumber === 1 && " · original"}
-              </span>
-              <span className="text-sm text-honey">
-                {version.avg ? `★ ${version.avg} avg` : "not baked yet"}
-              </span>
-            </div>
+            {editing ? (
+              <form action={renameVersionAction} className="flex gap-2">
+                <input type="hidden" name="versionId" value={version.id} />
+                <input type="hidden" name="recipeId" value={version.recipeId} />
+                <input
+                  type="hidden"
+                  name="autoName"
+                  value={`Version ${version.versionNumber}`}
+                />
+                <input
+                  name="label"
+                  defaultValue={version.name}
+                  aria-label="Version name"
+                  className="min-w-0 flex-1 rounded-lg border border-butter-dark bg-white px-3 py-2 text-sm font-medium"
+                />
+                <button
+                  type="submit"
+                  className="shrink-0 rounded-lg bg-terracotta px-3 py-2 text-sm font-medium text-cream"
+                >
+                  Rename
+                </button>
+              </form>
+            ) : (
+              <div className="flex items-baseline justify-between gap-2">
+                <Link
+                  href={`/recipes/${version.recipeId}/versions/${version.id}/edit`}
+                  className="font-medium text-terracotta-dark underline decoration-butter-dark underline-offset-2"
+                >
+                  {version.name}
+                  {version.versionNumber === 1 && " · original"}
+                </Link>
+                <span className="shrink-0 text-sm text-honey">
+                  {version.avg ? `★ ${version.avg} avg` : "not baked yet"}
+                </span>
+              </div>
+            )}
+
             {version.diffSummary && (
               <p className="mt-1 text-sm text-chocolate">{version.diffSummary}</p>
             )}
@@ -86,25 +122,8 @@ export function VersionList({ versions }: { versions: VersionRow[] }) {
               </div>
             </details>
 
-            {editing && (
-              <div className="mt-3 space-y-3 border-t border-butter-dark/60 pt-3">
-                <form action={renameVersionAction} className="flex gap-2">
-                  <input type="hidden" name="versionId" value={version.id} />
-                  <input type="hidden" name="recipeId" value={version.recipeId} />
-                  <input
-                    name="label"
-                    defaultValue={version.label ?? ""}
-                    placeholder={`Name (blank = Version ${version.versionNumber})`}
-                    className="min-w-0 flex-1 rounded-lg border border-butter-dark bg-white px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="submit"
-                    className="shrink-0 rounded-lg bg-terracotta px-3 py-2 text-sm font-medium text-cream"
-                  >
-                    Rename
-                  </button>
-                </form>
-
+            {editing ? (
+              <div className="mt-3 border-t border-butter-dark/60 pt-3">
                 {canDelete ? (
                   confirmId === version.id ? (
                     <div className="rounded-lg bg-butter/40 p-3">
@@ -114,20 +133,9 @@ export function VersionList({ versions }: { versions: VersionRow[] }) {
                         } plus their feedback? This can't be undone.`}
                       </p>
                       <div className="mt-2 flex gap-2">
-                        <form
-                          action={deleteVersionAction}
-                          className="flex-1"
-                        >
-                          <input
-                            type="hidden"
-                            name="versionId"
-                            value={version.id}
-                          />
-                          <input
-                            type="hidden"
-                            name="recipeId"
-                            value={version.recipeId}
-                          />
+                        <form action={deleteVersionAction} className="flex-1">
+                          <input type="hidden" name="versionId" value={version.id} />
+                          <input type="hidden" name="recipeId" value={version.recipeId} />
                           <button
                             type="submit"
                             className="w-full rounded-lg bg-terracotta py-2 text-sm font-medium text-cream"
@@ -159,6 +167,16 @@ export function VersionList({ versions }: { versions: VersionRow[] }) {
                     it.
                   </p>
                 )}
+              </div>
+            ) : (
+              <div className="mt-3 flex gap-2">
+                <BakeThisButton versionId={version.id} label="Bake this tonight" />
+                <Link
+                  href={`/bake/${version.recipeId}/tweak?from=${version.id}`}
+                  className="flex-1 rounded-xl border border-terracotta py-2.5 text-center text-sm font-medium text-terracotta-dark active:scale-[0.99]"
+                >
+                  Tweak it first
+                </Link>
               </div>
             )}
           </li>

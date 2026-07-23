@@ -8,7 +8,13 @@ import { createBakeAction } from "../actions";
  * server default would use UTC and can slip a day during evening bakes), then
  * the server action creates the bake and redirects to the combined bake page.
  */
-export function BakeThisButton({ versionId }: { versionId: string }) {
+export function BakeThisButton({
+  versionId,
+  label = "Bake this",
+}: {
+  versionId: string;
+  label?: string;
+}) {
   const dateRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -29,7 +35,7 @@ export function BakeThisButton({ versionId }: { versionId: string }) {
         type="submit"
         className="w-full rounded-xl bg-terracotta py-2.5 text-center text-sm font-medium text-cream active:scale-[0.99]"
       >
-        Bake this
+        {label}
       </button>
     </form>
   );

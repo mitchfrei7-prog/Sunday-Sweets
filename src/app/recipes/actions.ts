@@ -121,21 +121,71 @@ export async function renameRecipeAction(formData: FormData) {
   revalidatePath("/");
 }
 
-/** Rename (or clear) a version's custom label. Empty resets to "Version N". */
+/**
+ * Rename (or clear) a version's custom label. Empty — or the auto name like
+ * "Version 3" — resets to no custom label.
+ */
 export async function renameVersionAction(formData: FormData) {
   const versionId = String(formData.get("versionId") ?? "");
   const recipeId = String(formData.get("recipeId") ?? "");
   const label = String(formData.get("label") ?? "").trim();
+  const autoName = String(formData.get("autoName") ?? "").trim();
   if (!versionId) throw new Error("Missing version id.");
+
+  const finalLabel = label && label !== autoName ? label : null;
 
   const db = getDb();
   await db
     .update(schema.versions)
-    .set({ label: label || null })
+    .set({ label: finalLabel })
     .where(eq(schema.versions.id, versionId));
 
   if (recipeId) revalidatePath(`/recipes/${recipeId}`);
   revalidatePath("/");
+}
+
+/**
+ * Edit an existing version in place (name, ingredients, steps, and the
+ * "what changed / why" story). Unlike a tweak, this does NOT create a new
+ * version — it's for fixing a version you already have.
+ */
+export async function updateVersionAction(formData: FormData) {
+  const versionId = String(formData.get("versionId") ?? "");
+  const recipeId = String(formData.get("recipeId") ?? "");
+  const label = String(formData.get("label") ?? "").trim();
+  const autoName = String(formData.get("autoName") ?? "").trim();
+  const diffSummary = String(formData.get("diffSummary") ?? "").trim();
+  const why = String(formData.get("why") ?? "").trim();
+  const ingredients = String(formData.get("ingredients") ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const steps = String(formData.get("steps") ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  if (!versionId || ingredients.length === 0 || steps.length === 0) {
+    throw new Error("A version needs ingredients and steps.");
+  }
+
+  const finalLabel = label && label !== autoName ? label : null;
+
+  const db = getDb();
+  await db
+    .update(schema.versions)
+    .set({
+      label: finalLabel,
+      ingredients,
+      steps,
+      diffSummary: diffSummary || null,
+      why: why || null,
+    })
+    .where(eq(schema.versions.id, versionId));
+
+  if (recipeId) revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/");
+  redirect(`/recipes/${recipeId}`);
 }
 
 /**

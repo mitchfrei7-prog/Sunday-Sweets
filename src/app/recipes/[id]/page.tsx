@@ -4,6 +4,7 @@ import { asc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { versionName } from "@/lib/version";
+import { categoryLabel } from "@/lib/categories";
 import { averageStars } from "@/lib/ratings";
 import { BakeHistory } from "@/components/bake-history";
 import { VersionList, type VersionRow } from "./version-list";
@@ -39,9 +40,6 @@ export default async function RecipeDetailPage({
   if (!recipe) notFound();
 
   const maxNumber = Math.max(...recipe.versions.map((v) => v.versionNumber));
-  const latestVersion = recipe.versions.find(
-    (v) => v.versionNumber === maxNumber,
-  );
 
   const versionRows: VersionRow[] = recipe.versions.map((version) => ({
     id: version.id,
@@ -65,23 +63,20 @@ export default async function RecipeDetailPage({
       </Link>
       <h1 className="mt-2 text-3xl">{recipe.name}</h1>
       <p className="mt-1 text-sm text-latte">
-        {recipe.category}
+        {categoryLabel(recipe.category)}
         {recipe.gfType === "gf_native" && " · written for GF flours"}
         {recipe.gfType === "substituted" && " · regular recipe, 1:1 GF swap"}
-        {recipe.sourceUrl && (
-          <>
-            {" · "}
-            <a
-              href={recipe.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              source
-            </a>
-          </>
-        )}
       </p>
+      {recipe.sourceUrl && (
+        <a
+          href={recipe.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 block break-all text-sm text-terracotta-dark underline"
+        >
+          {recipe.sourceUrl}
+        </a>
+      )}
 
       {recipe.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
@@ -98,28 +93,11 @@ export default async function RecipeDetailPage({
 
       <VersionList versions={versionRows} />
 
-      <BakeHistory
-        versions={recipe.versions}
-        empty={
-          <>No bakes yet. Hit &ldquo;Bake this tonight&rdquo; below to log the first one.</>
-        }
-      />
-
-      <div className="mt-8 space-y-2 pb-8">
-        <Link
-          href={`/bake/${recipe.id}`}
-          className="block rounded-xl bg-terracotta py-3 text-center font-medium text-cream active:scale-[0.99]"
-        >
-          Bake this tonight
-        </Link>
-        {latestVersion && (
-          <Link
-            href={`/bake/${recipe.id}/tweak?from=${latestVersion.id}&next=recipe`}
-            className="block rounded-xl border border-terracotta py-3 text-center font-medium text-terracotta-dark active:scale-[0.99]"
-          >
-            Tweak into a new version
-          </Link>
-        )}
+      <div className="pb-8">
+        <BakeHistory
+          versions={recipe.versions}
+          empty={<>No bakes yet — hit &ldquo;Bake this tonight&rdquo; on a version above.</>}
+        />
       </div>
     </main>
   );
