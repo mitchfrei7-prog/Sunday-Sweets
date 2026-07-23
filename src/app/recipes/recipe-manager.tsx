@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { categoryLabel } from "@/lib/categories";
 import { deleteRecipeAction, renameRecipeAction } from "./actions";
 
 export type RecipeRow = {
@@ -10,14 +11,6 @@ export type RecipeRow = {
   category: string;
   gfType: string | null;
   versionCount: number;
-};
-
-const categoryLabels: Record<string, string> = {
-  cookies: "Cookies",
-  brownies: "Brownies",
-  cake: "Cake",
-  bites: "Energy bites",
-  other: "Other",
 };
 
 function RowBody({ recipe }: { recipe: RecipeRow }) {
@@ -30,7 +23,7 @@ function RowBody({ recipe }: { recipe: RecipeRow }) {
         </span>
       </div>
       <p className="mt-0.5 text-sm text-latte">
-        {categoryLabels[recipe.category] ?? recipe.category}
+        {categoryLabel(recipe.category)}
         {recipe.gfType === "gf_native" && " · GF-native"}
         {recipe.gfType === "substituted" && " · 1:1 substituted"}
       </p>

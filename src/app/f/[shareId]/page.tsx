@@ -101,12 +101,7 @@ export default async function TasterPage({
       <p className="mt-1 text-latte">
         {bake.version.recipe.name} · baked {formatBakeDate(bake.bakedOn)}
       </p>
-      <TasterForm
-        shareId={shareId}
-        isBakeoff={bake.isBakeoff}
-        bakeoffDiff={bake.bakeoffDiff}
-        enteredByEmma={by === "emma"}
-      />
+      <TasterForm shareId={shareId} enteredByEmma={by === "emma"} />
     </main>
   );
 }

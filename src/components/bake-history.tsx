@@ -7,7 +7,6 @@ type Feedback = { overall: string | null };
 type Bake = {
   id: string;
   bakedOn: string;
-  isBakeoff: boolean;
   rating: string | null;
   feedback: Feedback[];
 };
@@ -49,7 +48,6 @@ export function BakeHistory({
                   <div className="flex items-baseline justify-between">
                     <span className="font-medium">
                       {versionName(version, { short: true })}
-                      {bake.isBakeoff && " · bake-off"}
                     </span>
                     {avg && <span className="text-sm text-honey">★ {avg}</span>}
                   </div>

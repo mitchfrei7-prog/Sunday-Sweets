@@ -6,6 +6,7 @@ import { SetupNotice } from "@/components/setup-notice";
 import { BakeHistory } from "@/components/bake-history";
 import { versionName } from "@/lib/version";
 import { averageStars } from "@/lib/ratings";
+import { BakeThisButton } from "./bake-this-button";
 
 export const dynamic = "force-dynamic";
 
@@ -97,12 +98,7 @@ export default async function BakeRecapPage({
                 </div>
               </details>
               <div className="mt-3 flex gap-2">
-                <Link
-                  href={`/bake/${recipe.id}/log?v=${version.id}`}
-                  className="flex-1 rounded-xl bg-terracotta py-2.5 text-center text-sm font-medium text-cream"
-                >
-                  Bake this
-                </Link>
+                <BakeThisButton versionId={version.id} />
                 <Link
                   href={`/bake/${recipe.id}/tweak?from=${version.id}`}
                   className="flex-1 rounded-xl border border-terracotta py-2.5 text-center text-sm font-medium text-terracotta-dark"

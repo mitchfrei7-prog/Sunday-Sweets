@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
+import { CATEGORIES } from "@/lib/categories";
 import {
   createRecipeAction,
   extractRecipeAction,
@@ -102,11 +103,11 @@ export default function NewRecipePage() {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full rounded-xl border border-butter-dark bg-white px-3 py-2.5"
             >
-              <option value="cookies">Cookies</option>
-              <option value="brownies">Brownies</option>
-              <option value="cake">Cake</option>
-              <option value="bites">Energy bites</option>
-              <option value="other">Other</option>
+              {CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
             </select>
           </Field>
 

@@ -17,8 +17,10 @@ import { relations } from "drizzle-orm";
 export const recipeCategory = pgEnum("recipe_category", [
   "cookies",
   "brownies",
-  "cake",
-  "bites",
+  "cakes",
+  "pies",
+  "snacks",
+  "muffins",
   "other",
 ]);
 
@@ -92,13 +94,16 @@ export const bakes = pgTable("bakes", {
   texture: numeric("texture", { precision: 2, scale: 1 }),
   taste: numeric("taste", { precision: 2, scale: 1 }),
   moisture: numeric("moisture", { precision: 2, scale: 1 }),
+  // "What I changed / did tonight" (notes) + "how it turned out" (outcomeNotes)
   notes: text("notes"),
+  outcomeNotes: text("outcome_notes"),
+  // Deprecated 2026-07-23 (batch size + bake-offs removed from the UI); columns
+  // kept to avoid a destructive migration.
   batchSize: text("batch_size"),
   flourBlendId: uuid("flour_blend_id").references(() => flourBlends.id),
   // Auto-fetched for the bake date — never entered by Emma
   weather: jsonb("weather").$type<{ humidity?: number; tempF?: number }>(),
   isBakeoff: boolean("is_bakeoff").notNull().default(false),
-  // What differs between variants A and B when isBakeoff is true
   bakeoffDiff: text("bakeoff_diff"),
   // Short unguessable id used in the QR/share link for taster feedback
   shareId: text("share_id").notNull().unique(),

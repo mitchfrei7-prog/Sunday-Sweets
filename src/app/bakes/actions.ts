@@ -18,26 +18,52 @@ function parseRating(raw: FormDataEntryValue | null): string | null {
   return n.toFixed(1);
 }
 
-export type WrapUpState = { saved?: boolean; error?: string };
+export type BakeFormState = { saved?: boolean; error?: string };
 
-export async function saveBakeReviewAction(
-  _prev: WrapUpState,
+/**
+ * Save everything on the combined bake page: date, flour blend, both notes, and
+ * Emma's ratings. Also the later "edit this bake" path. New flour blends typed
+ * in the field are created on the fly.
+ */
+export async function saveBakeAction(
+  _prev: BakeFormState,
   formData: FormData,
-): Promise<WrapUpState> {
+): Promise<BakeFormState> {
   const bakeId = String(formData.get("bakeId") ?? "");
   if (!bakeId) return { error: "Missing bake id." };
+
+  const bakedOn = String(formData.get("bakedOn") ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(bakedOn)) {
+    return { error: "Please pick a bake date." };
+  }
   const notes = String(formData.get("notes") ?? "").trim();
+  const outcomeNotes = String(formData.get("outcomeNotes") ?? "").trim();
+  const flourBlendId = String(formData.get("flourBlendId") ?? "");
+  const newBlendName = String(formData.get("newBlendName") ?? "").trim();
 
   try {
     const db = getDb();
+
+    let blendId: string | null = flourBlendId || null;
+    if (!blendId && newBlendName) {
+      const [blend] = await db
+        .insert(schema.flourBlends)
+        .values({ name: newBlendName })
+        .returning();
+      blendId = blend.id;
+    }
+
     await db
       .update(schema.bakes)
       .set({
+        bakedOn,
+        flourBlendId: blendId,
+        notes: notes || null,
+        outcomeNotes: outcomeNotes || null,
         rating: parseRating(formData.get("rating")),
         texture: parseRating(formData.get("texture")),
         taste: parseRating(formData.get("taste")),
         moisture: parseRating(formData.get("moisture")),
-        notes: notes || null,
       })
       .where(eq(schema.bakes.id, bakeId));
   } catch (err) {

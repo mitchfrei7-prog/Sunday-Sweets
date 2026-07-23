@@ -40,8 +40,10 @@ export async function createRecipeAction(formData: FormData) {
   const category = String(formData.get("category") ?? "other") as
     | "cookies"
     | "brownies"
-    | "cake"
-    | "bites"
+    | "cakes"
+    | "pies"
+    | "snacks"
+    | "muffins"
     | "other";
   const gfTypeRaw = String(formData.get("gfType") ?? "");
   const sourceUrl = String(formData.get("sourceUrl") ?? "").trim() || null;

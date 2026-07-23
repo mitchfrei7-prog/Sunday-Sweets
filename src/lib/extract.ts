@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export type ExtractedRecipe = {
   name: string;
-  category: "cookies" | "brownies" | "cake" | "bites" | "other";
+  category: "cookies" | "brownies" | "cakes" | "pies" | "snacks" | "muffins" | "other";
   ingredients: string[];
   steps: string[];
   isGlutenFree: boolean;
@@ -16,7 +16,7 @@ const recipeSchema = {
     name: { type: "string", description: "The recipe title" },
     category: {
       type: "string",
-      enum: ["cookies", "brownies", "cake", "bites", "other"],
+      enum: ["cookies", "brownies", "cakes", "pies", "snacks", "muffins", "other"],
       description: "Best-fit category for this recipe",
     },
     ingredients: {

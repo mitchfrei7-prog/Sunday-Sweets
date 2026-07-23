@@ -2,20 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import QRCode from "qrcode";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
 import { CopyLinkButton } from "@/components/copy-link-button";
 import { versionName } from "@/lib/version";
-import { formatBakeDate } from "@/lib/dates";
-import { WrapUpForm } from "./wrap-up-form";
+import { categoryLabel } from "@/lib/categories";
+import { BakeForm } from "./bake-form";
 import { PhotoUploader } from "./photo-uploader";
 import { deleteBakePhotoAction } from "../actions";
 import { isBlobConfigured } from "@/lib/blob";
 
 export const dynamic = "force-dynamic";
 
-export default async function BakeWrapUpPage({
+export default async function BakePage({
   params,
 }: {
   params: Promise<{ bakeId: string }>;
@@ -43,6 +43,12 @@ export default async function BakeWrapUpPage({
 
   if (!bake) notFound();
 
+  const blends = await db.query.flourBlends.findMany({
+    orderBy: [asc(schema.flourBlends.name)],
+  });
+
+  const recipe = bake.version.recipe;
+
   const h = await headers();
   const host = h.get("host") ?? "sunday-sweets.vercel.app";
   const proto = host.includes("localhost") ? "http" : "https";
@@ -58,41 +64,59 @@ export default async function BakeWrapUpPage({
       <Link href="/" className="text-sm text-latte">
         ← Home
       </Link>
-      <h1 className="mt-2 text-3xl">
-        {bake.version.recipe.name}
-      </h1>
-      <p className="mt-1 text-latte">
-        {versionName(bake.version, { short: true })} · baked{" "}
-        {formatBakeDate(bake.bakedOn)}
-        {bake.flourBlend && ` · ${bake.flourBlend.name}`}
-        {bake.isBakeoff && " · bake-off"}
+      <h1 className="mt-2 text-3xl">{recipe.name}</h1>
+      <p className="mt-1 text-sm text-latte">
+        {versionName(bake.version)} · {categoryLabel(recipe.category)}
       </p>
-      {bake.isBakeoff && bake.bakeoffDiff && (
-        <p className="mt-1 text-sm text-latte">A/B: {bake.bakeoffDiff}</p>
+
+      {bake.version.diffSummary && (
+        <p className="mt-2 text-sm text-chocolate">
+          This version: {bake.version.diffSummary}
+        </p>
       )}
+      {bake.version.why && (
+        <p className="mt-0.5 text-sm italic text-latte">
+          &ldquo;{bake.version.why}&rdquo;
+        </p>
+      )}
+
+      {recipe.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {recipe.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-butter px-2.5 py-1 text-xs text-chocolate"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
       {bake.weather?.humidity != null && (
-        <p className="mt-1 text-xs text-latte">
+        <p className="mt-2 text-xs text-latte">
           {bake.weather.humidity}% humidity
           {bake.weather.tempF != null && ` · ${Math.round(bake.weather.tempF)}°F`}{" "}
           (auto-logged)
         </p>
       )}
 
-      <section className="mt-6 rounded-2xl border border-butter-dark bg-white/60 p-4">
-        <h2 className="text-lg">Emma&apos;s wrap-up</h2>
-        <WrapUpForm
-          bakeId={bake.id}
-          initial={{
-            rating: bake.rating ? Number(bake.rating) : 0,
-            texture: bake.texture ? Number(bake.texture) : 0,
-            taste: bake.taste ? Number(bake.taste) : 0,
-            moisture: bake.moisture ? Number(bake.moisture) : 0,
-            notes: bake.notes ?? "",
-          }}
-        />
-      </section>
+      <BakeForm
+        bakeId={bake.id}
+        blends={blends}
+        initial={{
+          bakedOn: bake.bakedOn,
+          flourBlendId: bake.flourBlendId ?? "",
+          notes: bake.notes ?? "",
+          outcomeNotes: bake.outcomeNotes ?? "",
+          rating: bake.rating ? Number(bake.rating) : 0,
+          texture: bake.texture ? Number(bake.texture) : 0,
+          taste: bake.taste ? Number(bake.taste) : 0,
+          moisture: bake.moisture ? Number(bake.moisture) : 0,
+        }}
+      />
 
-      <section className="mt-4 rounded-2xl border border-butter-dark bg-white/60 p-4">
+      <section className="mt-6 rounded-2xl border border-butter-dark bg-white/60 p-4">
         <h2 className="text-lg">Photos</h2>
         {bake.photos.length > 0 && (
           <ul className="mt-3 grid grid-cols-2 gap-2">
@@ -145,7 +169,7 @@ export default async function BakeWrapUpPage({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={qrDataUrl}
-          alt={`QR code linking to the feedback form for this bake`}
+          alt="QR code linking to the feedback form for this bake"
           className="mx-auto mt-3 rounded-lg"
           width={220}
           height={220}
@@ -163,9 +187,7 @@ export default async function BakeWrapUpPage({
       </section>
 
       <section className="mt-4 pb-8">
-        <h2 className="text-lg">
-          Taster feedback ({bake.feedback.length})
-        </h2>
+        <h2 className="text-lg">Taster feedback ({bake.feedback.length})</h2>
         {bake.feedback.length === 0 ? (
           <p className="mt-2 rounded-xl border border-butter-dark bg-butter/40 p-4 text-sm text-latte">
             Nothing yet — pass the plate and the QR code around.
@@ -180,8 +202,6 @@ export default async function BakeWrapUpPage({
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm font-medium">
                     {f.tasterName || "Anonymous"}
-                    {f.variant !== "single" &&
-                      ` · plate ${f.variant.toUpperCase()}`}
                   </span>
                   <span className="text-sm text-honey">
                     ★ {Number(f.overall).toFixed(1)}

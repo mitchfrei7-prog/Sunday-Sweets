@@ -34,47 +34,21 @@ export async function submitFeedbackAction(
   if (!bake) return { error: "This link doesn't match a bake anymore." };
 
   try {
-    if (bake.isBakeoff) {
-      const overallA = parseRating(formData.get("overall_a"), "Plate A rating");
-      const overallB = parseRating(formData.get("overall_b"), "Plate B rating");
-      if (!overallA || !overallB) {
-        return { error: "Please rate both plate A and plate B." };
-      }
-      await db.insert(schema.feedback).values([
-        {
-          bakeId: bake.id,
-          variant: "a",
-          overall: overallA,
-          notes: String(formData.get("notes_a") ?? "").trim() || null,
-          tasterName,
-          enteredBy,
-        },
-        {
-          bakeId: bake.id,
-          variant: "b",
-          overall: overallB,
-          notes: String(formData.get("notes_b") ?? "").trim() || null,
-          tasterName,
-          enteredBy,
-        },
-      ]);
-    } else {
-      const overall = parseRating(formData.get("overall"), "Overall rating");
-      if (!overall) {
-        return { error: "An overall star rating is required — tap the stars!" };
-      }
-      await db.insert(schema.feedback).values({
-        bakeId: bake.id,
-        variant: "single",
-        overall,
-        texture: parseRating(formData.get("texture"), "Texture"),
-        taste: parseRating(formData.get("taste"), "Taste"),
-        moisture: parseRating(formData.get("moisture"), "Moisture"),
-        notes: String(formData.get("notes") ?? "").trim() || null,
-        tasterName,
-        enteredBy,
-      });
+    const overall = parseRating(formData.get("overall"), "Overall rating");
+    if (!overall) {
+      return { error: "An overall star rating is required — tap the stars!" };
     }
+    await db.insert(schema.feedback).values({
+      bakeId: bake.id,
+      variant: "single",
+      overall,
+      texture: parseRating(formData.get("texture"), "Texture"),
+      taste: parseRating(formData.get("taste"), "Taste"),
+      moisture: parseRating(formData.get("moisture"), "Moisture"),
+      notes: String(formData.get("notes") ?? "").trim() || null,
+      tasterName,
+      enteredBy,
+    });
   } catch (err) {
     return {
       error: err instanceof Error ? err.message : "Something went wrong — try again.",

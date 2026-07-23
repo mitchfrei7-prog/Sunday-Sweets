@@ -7,14 +7,38 @@ import { eq, max } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { fetchCurrentWeather } from "@/lib/weather";
 
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Start a bake for a version: creates the row (date + auto weather + share id)
+ * so the combined bake page can immediately show photos and a QR code. All the
+ * other details (flour blend, notes, ratings) are filled in on that page.
+ */
+async function startBake(versionId: string, bakedOn: string) {
+  const db = getDb();
+  const weather = await fetchCurrentWeather();
+  const [bake] = await db
+    .insert(schema.bakes)
+    .values({
+      versionId,
+      bakedOn,
+      weather: weather ?? undefined,
+      shareId: randomBytes(9).toString("base64url"),
+    })
+    .returning();
+  return bake;
+}
+
 export async function createVersionAction(formData: FormData) {
   const recipeId = String(formData.get("recipeId") ?? "");
   const parentVersionId = String(formData.get("parentVersionId") ?? "");
   const label = String(formData.get("label") ?? "").trim();
   const diffSummary = String(formData.get("diffSummary") ?? "").trim();
   const why = String(formData.get("why") ?? "").trim();
-  // "recipe" returns to the recipe page (just versioning); default continues
-  // into the bake log (the Bake Tonight flow).
+  // "recipe" returns to the recipe page (just versioning); otherwise we start a
+  // bake for the new version and open the combined bake page.
   const next = String(formData.get("next") ?? "");
   const ingredients = String(formData.get("ingredients") ?? "")
     .split("\n")
@@ -51,51 +75,19 @@ export async function createVersionAction(formData: FormData) {
 
   revalidatePath(`/recipes/${recipeId}`);
   if (next === "recipe") redirect(`/recipes/${recipeId}`);
-  redirect(`/bake/${recipeId}/log?v=${version.id}`);
+
+  const bake = await startBake(version.id, todayIso());
+  revalidatePath("/");
+  redirect(`/bakes/${bake.id}`);
 }
 
+/** Start baking the chosen version → opens the combined bake page. */
 export async function createBakeAction(formData: FormData) {
   const versionId = String(formData.get("versionId") ?? "");
-  const bakedOn = String(formData.get("bakedOn") ?? "");
-  const batchSize = String(formData.get("batchSize") ?? "").trim();
-  const notes = String(formData.get("notes") ?? "").trim();
-  const bakeoffDiff = String(formData.get("bakeoffDiff") ?? "").trim();
-  const flourBlendId = String(formData.get("flourBlendId") ?? "");
-  const newBlendName = String(formData.get("newBlendName") ?? "").trim();
+  if (!versionId) throw new Error("A bake needs a version.");
+  const bakedOn = String(formData.get("bakedOn") ?? "").trim() || todayIso();
 
-  if (!versionId || !bakedOn) {
-    throw new Error("A bake needs a version and a date.");
-  }
-
-  const db = getDb();
-
-  let blendId: string | null = flourBlendId || null;
-  if (!blendId && newBlendName) {
-    const [blend] = await db
-      .insert(schema.flourBlends)
-      .values({ name: newBlendName })
-      .returning();
-    blendId = blend.id;
-  }
-
-  // Silent, best-effort — never blocks the bake
-  const weather = await fetchCurrentWeather();
-
-  const [bake] = await db
-    .insert(schema.bakes)
-    .values({
-      versionId,
-      bakedOn,
-      batchSize: batchSize || null,
-      notes: notes || null,
-      flourBlendId: blendId,
-      weather: weather ?? undefined,
-      isBakeoff: bakeoffDiff.length > 0,
-      bakeoffDiff: bakeoffDiff || null,
-      shareId: randomBytes(9).toString("base64url"),
-    })
-    .returning();
-
+  const bake = await startBake(versionId, bakedOn);
   revalidatePath("/");
   redirect(`/bakes/${bake.id}`);
 }
