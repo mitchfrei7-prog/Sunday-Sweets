@@ -46,6 +46,7 @@ async function RecipeList() {
         id: recipe.id,
         name: recipe.name,
         category: recipe.category,
+        tags: recipe.tags,
         gfType: recipe.gfType,
         versionCount: recipe.versions.length,
       }))}
