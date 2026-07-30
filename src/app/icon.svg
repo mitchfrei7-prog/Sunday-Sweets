@@ -18,8 +18,8 @@
   </g>
   <circle cx="256" cy="256" r="120" fill="#E3AB3E" mask="url(#bite)"/>
   <circle cx="214" cy="238" r="15" fill="#5A3A1E"/>
-  <circle cx="252" cy="292" r="14" fill="#5A3A1E"/>
-  <circle cx="300" cy="300" r="13" fill="#5A3A1E"/>
-  <circle cx="204" cy="292" r="11" fill="#5A3A1E"/>
   <circle cx="286" cy="240" r="10" fill="#5A3A1E"/>
+  <circle cx="206" cy="284" r="11" fill="#5A3A1E"/>
+  <circle cx="250" cy="296" r="14" fill="#5A3A1E"/>
+  <circle cx="298" cy="284" r="13" fill="#5A3A1E"/>
 </svg>
