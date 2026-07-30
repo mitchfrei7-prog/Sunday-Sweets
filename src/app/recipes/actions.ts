@@ -104,6 +104,52 @@ export async function deleteRecipeAction(formData: FormData) {
   revalidatePath("/");
 }
 
+/**
+ * Edit a recipe's details — name, category, GF type, source link, tags.
+ * Separate from version editing: this is the concept, not a formulation.
+ */
+export async function updateRecipeAction(formData: FormData) {
+  const recipeId = String(formData.get("recipeId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!recipeId) throw new Error("Missing recipe id.");
+  if (!name) throw new Error("The recipe needs a name.");
+
+  const category = String(formData.get("category") ?? "other") as
+    | "cookies"
+    | "brownies"
+    | "cakes"
+    | "pies"
+    | "snacks"
+    | "muffins"
+    | "other";
+  const gfTypeRaw = String(formData.get("gfType") ?? "");
+  const sourceUrl = String(formData.get("sourceUrl") ?? "").trim() || null;
+  const tags = String(formData.get("tags") ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+
+  const db = getDb();
+  await db
+    .update(schema.recipes)
+    .set({
+      name,
+      category,
+      tags,
+      sourceUrl,
+      gfType:
+        gfTypeRaw === "gf_native" || gfTypeRaw === "substituted"
+          ? gfTypeRaw
+          : null,
+    })
+    .where(eq(schema.recipes.id, recipeId));
+
+  revalidatePath("/recipes");
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/");
+  redirect(`/recipes/${recipeId}`);
+}
+
 export async function renameRecipeAction(formData: FormData) {
   const recipeId = String(formData.get("recipeId") ?? "");
   const name = String(formData.get("name") ?? "").trim();

@@ -61,7 +61,15 @@ export default async function RecipeDetailPage({
       <Link href="/recipes" className="text-sm text-latte">
         ← Recipes
       </Link>
-      <h1 className="mt-2 text-3xl">{recipe.name}</h1>
+      <div className="mt-2 flex items-start justify-between gap-3">
+        <h1 className="text-3xl">{recipe.name}</h1>
+        <Link
+          href={`/recipes/${recipe.id}/edit`}
+          className="mt-1 shrink-0 rounded-full border border-butter-dark px-3 py-1 text-sm font-medium text-terracotta-dark active:bg-butter/60"
+        >
+          Edit recipe
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-latte">
         {categoryLabel(recipe.category)}
         {recipe.gfType === "gf_native" && " · written for GF flours"}
