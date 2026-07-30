@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
 import { SetupNotice } from "@/components/setup-notice";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryLabel } from "@/lib/categories";
 import { updateRecipeAction } from "@/app/recipes/actions";
 
 export const dynamic = "force-dynamic";
@@ -73,7 +73,18 @@ export default async function EditRecipePage({
                   {c.label}
                 </option>
               ))}
+              {!CATEGORIES.some((c) => c.value === recipe.category) && (
+                <option value={recipe.category}>
+                  {categoryLabel(recipe.category)}
+                </option>
+              )}
             </select>
+            <input
+              name="newCategory"
+              placeholder="…or type a new one"
+              aria-label="New category"
+              className="mt-2 w-full rounded-xl border border-butter-dark bg-white px-3 py-2.5"
+            />
           </div>
 
           <div>

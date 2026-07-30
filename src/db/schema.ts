@@ -14,15 +14,9 @@ import { relations } from "drizzle-orm";
 
 // ── Enums ────────────────────────────────────────────────────────────────────
 
-export const recipeCategory = pgEnum("recipe_category", [
-  "cookies",
-  "brownies",
-  "cakes",
-  "pies",
-  "snacks",
-  "muffins",
-  "other",
-]);
+// NOTE: recipes.category used to be a pgEnum but is free text as of 2026-07-23
+// so Emma can invent her own categories. The built-in list lives in
+// src/lib/categories.ts; the old recipe_category type is left in the DB unused.
 
 // gf_native = recipe written for GF flours; substituted = regular recipe with a
 // 1:1 GF flour swap. An important analysis dimension for the AI.
@@ -44,7 +38,9 @@ export const insightType = pgEnum("insight_type", [
 export const recipes = pgTable("recipes", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
-  category: recipeCategory("category").notNull().default("other"),
+  // Free text: built-in values from src/lib/categories.ts, or a custom one
+  // Emma typed (stored lowercase, e.g. "breads").
+  category: text("category").notNull().default("other"),
   tags: jsonb("tags").$type<string[]>().notNull().default([]),
   sourceUrl: text("source_url"),
   sourcePhotoUrl: text("source_photo_url"),

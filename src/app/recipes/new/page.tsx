@@ -109,6 +109,12 @@ export default function NewRecipePage() {
                 </option>
               ))}
             </select>
+            <input
+              name="newCategory"
+              placeholder="…or type a new one"
+              aria-label="New category"
+              className="mt-2 w-full rounded-xl border border-butter-dark bg-white px-3 py-2.5"
+            />
           </Field>
 
           <Field label="GF type" htmlFor="gfType">

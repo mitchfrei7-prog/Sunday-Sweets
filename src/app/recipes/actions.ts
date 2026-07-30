@@ -4,7 +4,19 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getDb, isDbConfigured, schema } from "@/db";
+import { normalizeCategory } from "@/lib/categories";
 import { extractRecipeFromUrl, type ExtractedRecipe } from "@/lib/extract";
+
+/**
+ * A typed-in category wins over the dropdown, so Emma can invent one
+ * ("breads") without first choosing a built-in. Stored lowercase.
+ */
+function pickCategory(formData: FormData): string {
+  const typed = normalizeCategory(String(formData.get("newCategory") ?? ""));
+  if (typed) return typed;
+  const picked = normalizeCategory(String(formData.get("category") ?? ""));
+  return picked || "other";
+}
 
 export type ExtractState =
   | { status: "idle" }
@@ -37,14 +49,7 @@ export async function createRecipeAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (!name) throw new Error("The recipe needs a name.");
 
-  const category = String(formData.get("category") ?? "other") as
-    | "cookies"
-    | "brownies"
-    | "cakes"
-    | "pies"
-    | "snacks"
-    | "muffins"
-    | "other";
+  const category = pickCategory(formData);
   const gfTypeRaw = String(formData.get("gfType") ?? "");
   const sourceUrl = String(formData.get("sourceUrl") ?? "").trim() || null;
   const tags = String(formData.get("tags") ?? "")
@@ -114,14 +119,7 @@ export async function updateRecipeAction(formData: FormData) {
   if (!recipeId) throw new Error("Missing recipe id.");
   if (!name) throw new Error("The recipe needs a name.");
 
-  const category = String(formData.get("category") ?? "other") as
-    | "cookies"
-    | "brownies"
-    | "cakes"
-    | "pies"
-    | "snacks"
-    | "muffins"
-    | "other";
+  const category = pickCategory(formData);
   const gfTypeRaw = String(formData.get("gfType") ?? "");
   const sourceUrl = String(formData.get("sourceUrl") ?? "").trim() || null;
   const tags = String(formData.get("tags") ?? "")

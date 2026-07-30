@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { CATEGORIES, categoryLabel } from "@/lib/categories";
+import { categoryLabel, orderedCategories } from "@/lib/categories";
 import { deleteRecipeAction, renameRecipeAction } from "./actions";
 
 export type RecipeRow = {
@@ -51,16 +51,16 @@ export function RecipeManager({ recipes }: { recipes: RecipeRow[] }) {
     );
   }, [recipes, query]);
 
-  // Group into the canonical category order; alphabetical inside each group.
+  // Built-ins first, then custom categories, "Other" last; alphabetical inside.
   const groups = useMemo(
     () =>
-      CATEGORIES.map((c) => ({
-        value: c.value as string,
-        label: c.label as string,
+      orderedCategories(matches.map((r) => r.category)).map((value) => ({
+        value,
+        label: categoryLabel(value),
         items: matches
-          .filter((r) => r.category === c.value)
+          .filter((r) => r.category === value)
           .sort((a, b) => a.name.localeCompare(b.name)),
-      })).filter((g) => g.items.length > 0),
+      })),
     [matches],
   );
 

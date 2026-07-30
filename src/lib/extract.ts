@@ -2,7 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export type ExtractedRecipe = {
   name: string;
-  category: "cookies" | "brownies" | "cakes" | "pies" | "snacks" | "muffins" | "other";
+  // Free text (see src/lib/categories.ts); the model picks a built-in value.
+  category: string;
   ingredients: string[];
   steps: string[];
   isGlutenFree: boolean;
