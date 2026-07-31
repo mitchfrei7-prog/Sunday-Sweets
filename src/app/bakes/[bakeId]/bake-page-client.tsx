@@ -79,8 +79,8 @@ export function BakePageClient({
 
   return (
     <main className="px-4 pt-8">
-      <Link href="/" className="text-sm text-latte">
-        ← Home
+      <Link href="/recipes" className="text-sm text-latte">
+        ← Recipes
       </Link>
       <h1 className="mt-2 text-3xl">{recipeName}</h1>
       <p className="mt-1 text-sm text-latte">
